@@ -1,3 +1,5 @@
+import HillClimbing
+
 ## Solve Every Sudoku Puzzle
 
 ## See http://norvig.com/sudoku.html
@@ -70,6 +72,27 @@ def grid_values(grid):
 
 ################ Constraint Propagation ################
 
+
+#assigne une valeur d a une case
+#elimine cette valeur du square de cette case
+# def assign_square(values, s, d):
+#
+#     square = {j: values[s] for j in units[s][-1]}
+#     eliminate_from_square(values,square,s,d)
+#     values[s]=d
+#     return values
+#
+#
+# #elimine la valeur d de toutes les cases de square
+# def eliminate_from_square(values,square,s,d):
+#     print(square,s,d)
+#     for i in square:
+#         if d in values[i]:
+#             values[i]=values[i].replace(d,'')
+
+
+
+
 def assign(values, s, d):
     """Eliminate all the other values (except d) from values[s] and propagate.
     Return values, except return False if a contradiction is detected."""
@@ -78,6 +101,9 @@ def assign(values, s, d):
         return values
     else:
         return False
+
+
+
 
 
 def eliminate(values, s, d):
@@ -125,29 +151,33 @@ def display(values):
 def solve(grid): return search(parse_grid(grid),0)
 
 
-def search(values,comptage):
+def search(values,compteur):
     "Using depth-first search and propagation, try all possible values."
     if values is False:
-        return False,comptage  ## Failed earlier
+        return False,compteur  ## Failed earlier
     if all(len(values[s]) == 1 for s in squares):
-        return values,comptage  ## Solved!
+        return values,compteur  ## Solved!
     ## Chose the unfilled square s with the fewest possibilities
     n, s = min((len(values[s]), s) for s in squares if len(values[s]) > 1)
 
     for d in values[s]:
         #incrementer le compteur a chaque tour de boucle
         #car a chaque tour on assign un chiffre a une case
-        comptage+=1
-        result,comptage=search(assign(values.copy(), s, d),comptage)
+        compteur=comptage_tentative(compteur)
+        result,compteur=search(assign(values.copy(), s, d),compteur)
         if result:
             #le jeux a été resolu
             break
 
 
-    return result,comptage
+    return result,compteur
     #print(s,values[s],values.copy())
     # return some(search(assign(values.copy(), s, d),comptage+1)
     #             for d in values[s] )
+
+
+def comptage_tentative(compteur):
+    return compteur+1
 
 
 ################ Utilities ################
@@ -237,8 +267,13 @@ if __name__ == '__main__':
     grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
     print("avant la resolution")
     display(parse_grid(grid1))
-    print("apres la resolution")
-    display(solve(grid1)[0])
+    # print("apres la resolution")
+    # results=solve(grid1)
+    # display(results[0])
+    # print("comptage ",results[1])
+
+
+    HillClimbing.hill_climbing(parse_grid(grid1))
     #solve(parse_grid(grid2))
 
     ## References used:
