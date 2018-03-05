@@ -1,6 +1,6 @@
 import Game
 import random
-
+import itertools
 
 def compteur_de_conflit(values):
 
@@ -16,6 +16,47 @@ def compteur_de_conflit(values):
     return compteur
 
 
+
+def combinison_possible(values,default_values,conflit_actuel):
+
+
+    list_de_candidats=[]
+    comb=[]
+    for i in range(18, len(Game.unitlist)):
+
+        comb.append(itertools.combinations(Game.unitlist[i],r=2))
+
+    for c in comb:
+        for f in c :
+            #on verifie que les cases a swaper ne sont pas des cases contenant des valeurs par defaut
+            if f[0]  not in default_values and  f[1] not in default_values :
+                values=swap(values,f[0],f[1])
+                #tester si le swap reduit les conflits
+                conflits=compteur_de_conflit(values)
+                if  conflits<conflit_actuel :
+                    #on mets le tuple qui diminue les nombre de conflits dans la liste des candidats
+                    list_de_candidats.append((f,conflits))
+                #on re-swap de nouveau
+                values=swap(values,f[0],f[1])
+
+    if len(list_de_candidats)==0:
+        #aucun swap ne permet de deminuer les conflits
+        #on arrete (maximum local trouvé )
+        return values
+
+    #maintetant qu'on a la liste de tout les candidats possible
+    #on choisit celui qui diminu les conflit le plus
+    meilleur= min(list_de_candidats , key=lambda x:x[1])
+    values=swap(values,meilleur[0][0],meilleur[0][1])
+    values= combinison_possible(values,default_values,meilleur[1])
+    return values
+
+#fonction qui swap deux valeurs dans deux case du meme carré
+def swap(values,first,second):
+    temp = values[first]
+    values[first] = values[second]
+    values[second] = temp
+    return values
 
 def hill_climbing(values):
 
@@ -52,5 +93,10 @@ def hill_climbing(values):
 
 
     Game.display(values)
-    print(compteur_de_conflit(values))
-    print(valeur_par_defaut)
+    conflit = compteur_de_conflit(values)
+    print("nombre de conflit avant ",conflit)
+    values=combinison_possible(values,valeur_par_defaut,conflit)
+    Game.display(values)
+    print("nombre de conflit apres ",compteur_de_conflit(values))
+
+
