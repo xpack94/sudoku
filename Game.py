@@ -1,4 +1,7 @@
 import HillClimbing
+import Recuit_simulé
+import sys
+import Remplissage_carrés
 
 ## Solve Every Sudoku Puzzle
 
@@ -31,6 +34,8 @@ units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
 peers = dict((s, set(sum(units[s], [])) - set([s]))
              for s in squares)
+
+comptage = 0
 
 
 ################ Unit Tests ################
@@ -96,6 +101,8 @@ def grid_values(grid):
 def assign(values, s, d):
     """Eliminate all the other values (except d) from values[s] and propagate.
     Return values, except return False if a contradiction is detected."""
+    global comptage
+    comptage+=1
     other_values = values[s].replace(d, '')
     if all(eliminate(values, s, d2) for d2 in other_values):
         return values
@@ -148,36 +155,33 @@ def display(values):
 
 ################ Search ################
 
-def solve(grid): return search(parse_grid(grid),0)
+def solve(grid): return search(parse_grid(grid))
 
 
-def search(values,compteur):
+def search(values):
     "Using depth-first search and propagation, try all possible values."
     if values is False:
-        return False,compteur  ## Failed earlier
+        return False  ## Failed earlier
     if all(len(values[s]) == 1 for s in squares):
-        return values,compteur  ## Solved!
+        return values  ## Solved!
     ## Chose the unfilled square s with the fewest possibilities
     n, s = min((len(values[s]), s) for s in squares if len(values[s]) > 1)
 
-    for d in values[s]:
-        #incrementer le compteur a chaque tour de boucle
-        #car a chaque tour on assign un chiffre a une case
-        compteur=comptage_tentative(compteur)
-        result,compteur=search(assign(values.copy(), s, d),compteur)
-        if result:
-            #le jeux a été resolu
-            break
+    # for d in values[s]:
+    #     #incrementer le compteur a chaque tour de boucle
+    #     #car a chaque tour on assign un chiffre a une case
+    #     compteur=comptage_tentative(compteur)
+    #     result,compteur=search(assign(values.copy(), s, d),compteur)
+    #     if result:
+    #         #le jeux a été resolu
+    #         break
 
 
-    return result,compteur
-    #print(s,values[s],values.copy())
-    # return some(search(assign(values.copy(), s, d),comptage+1)
-    #             for d in values[s] )
+    #return result,compteur
+    return some(search(assign(values.copy(), s, d))
+                for d in values[s] )
 
 
-def comptage_tentative(compteur):
-    return compteur+1
 
 
 ################ Utilities ################
@@ -199,6 +203,32 @@ def shuffled(seq):
     seq = list(seq)
     random.shuffle(seq)
     return seq
+
+
+def compteur_de_conflit(values):
+
+    compteur=0
+    for i in range(0,18):
+
+
+        for j in range(0,len(unitlist[i])):
+            for k in range(j+1,len(unitlist[i])):
+                if values[unitlist[i][j]] == values[unitlist[i][k]] :
+                    compteur+=1
+
+    return compteur
+
+
+def score(values):
+    return sum([-1 for u in range(0,18)  for l in unitlist[u] if len(values[l]) ==1])
+
+#fonction qui swap deux valeurs dans deux case du meme carré
+def swap(values,first,second):
+    temp = values[first]
+    values[first] = values[second]
+    values[second] = temp
+    return values
+
 
 
 ################ System test ################
@@ -265,15 +295,18 @@ if __name__ == '__main__':
     # solve_all([random_puzzle() for _ in range(99)], "random", 100.0)
     grid1 = '200060000007004086000001300000000040090000000480000710900078000000050002020600501'
     grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
+    grid3= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
     print("avant la resolution")
     display(parse_grid(grid1))
-    # print("apres la resolution")
-    # results=solve(grid1)
-    # display(results[0])
-    # print("comptage ",results[1])
+    display(solve(grid1))
+
+    values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid1))
+    v=values.copy()
+    HillClimbing.hill_climbing(values,valeur_par_defaut)
+    Recuit_simulé.recuit_simule(v,valeur_par_defaut)
 
 
-    HillClimbing.hill_climbing(parse_grid(grid1))
+
     #solve(parse_grid(grid2))
 
     ## References used:
