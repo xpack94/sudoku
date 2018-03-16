@@ -2,7 +2,9 @@ import HillClimbing
 import Recuit_simulé
 import sys
 import Remplissage_carrés
-
+import Heuristique2
+import Heuristique1
+import Heuristique3
 ## Solve Every Sudoku Puzzle
 
 ## See http://norvig.com/sudoku.html
@@ -220,6 +222,7 @@ def compteur_de_conflit(values):
 
 
 def score(values):
+
     return sum([-1 for u in range(0,18)  for l in unitlist[u] if len(values[l]) ==1])
 
 #fonction qui swap deux valeurs dans deux case du meme carré
@@ -297,15 +300,21 @@ if __name__ == '__main__':
     grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
     grid3= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
     print("avant la resolution")
-    display(parse_grid(grid1))
-    display(solve(grid1))
+    display(parse_grid(grid3))
 
-    values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid1))
+    #display(solve(grid2))
+
+    values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid3))
     v=values.copy()
-    HillClimbing.hill_climbing(values,valeur_par_defaut)
-    Recuit_simulé.recuit_simule(v,valeur_par_defaut)
-
-
+    #print(compteur_de_nombre(v))
+    #v1=HillClimbing.hill_climbing(values,valeur_par_defaut)
+    # v=Recuit_simulé.recuit_simule(v,valeur_par_defaut)
+    display(v)
+    # print("conflits apres",compteur_de_conflit(v))
+    #Heuristique.heuristique(v,valeur_par_defaut)
+    #Heuristique2.apply_heuristique(parse_grid(grid1))
+    #print(comptage)
+    Heuristique3.hidden_singles(parse_grid(grid3))
 
     #solve(parse_grid(grid2))
 

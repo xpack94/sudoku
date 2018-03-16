@@ -8,10 +8,11 @@ import math
 
 
 def probability(p):
+
    return p>random.uniform(0.0, 1.0)
 
 def cooling(t):
-    if t < 0.001:
+    if t < 0.01:
         return 0
     else:
         return 0.99 * t
@@ -37,14 +38,13 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
 
             l+=1
 
+    #faire un join de tout les sous tableau de permutations possible
     comb = [x for c in comb for x in c]
+
     for t in range(sys.maxsize):
 
             if temp == 0 or conflit_actuel==0:
              return values
-
-
-
 
 
 
@@ -58,15 +58,10 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
             diff_conflit= float(conflit_actuel-conflits)
 
             if  diff_conflit>0 or probability(math.exp(diff_conflit/temp)):
-
+                print(conflit_actuel,temp)
                 conflit_actuel=conflits
                 temp = cooling(temp)
 
-
-                #tester si on peut mettre le swap comme candidat
-                # if  diff_conflit>0 or probability (math.exp(diff_conflit/temp)) :
-                #         #values = trouver_candidat(temp, values, default_values,conflits)
-                #         conflit_actuel=conflits
 
             else:
                 values = Game.swap(values, enfant_potentiel[0], enfant_potentiel[1])
@@ -86,13 +81,13 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
 
 
 def recuit_simule(values,valeur_par_defaut):
-    Temperature = 3.5 #par defaut
+    Temperature = 3 #par defaut
     #values,valeur_par_defaut =Remplissage_carrés.remplissage(values)
-    Game.display(values)
+    #Game.display(values)
     conflit=Game.compteur_de_conflit(values)
-    print("nombre de conflit avant ", conflit)
+    #print("nombre de conflit avant ", conflit)
     values= trouver_candidat(Temperature,values,valeur_par_defaut,conflit)
-    print("nombre de conflit apres ", Game.compteur_de_conflit(values))
-    Game.display(values)
+    #print("nombre de conflit apres ", Game.compteur_de_conflit(values))
+    #Game.display(values)
     return values
 
