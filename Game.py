@@ -103,6 +103,7 @@ def grid_values(grid):
 def assign(values, s, d):
     """Eliminate all the other values (except d) from values[s] and propagate.
     Return values, except return False if a contradiction is detected."""
+
     global comptage
     comptage+=1
     other_values = values[s].replace(d, '')
@@ -116,6 +117,7 @@ def assign(values, s, d):
 
 
 def eliminate(values, s, d):
+
     """Eliminate d from values[s]; propagate when values or places <= 2.
     Return values, except return False if a contradiction is detected."""
     if d not in values[s]:
@@ -300,21 +302,21 @@ if __name__ == '__main__':
     grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
     grid3= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
     print("avant la resolution")
-    display(parse_grid(grid3))
+    display(parse_grid(grid2))
 
     #display(solve(grid2))
 
-    values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid3))
-    v=values.copy()
+    #values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid1))
+    #v=values.copy()
     #print(compteur_de_nombre(v))
     #v1=HillClimbing.hill_climbing(values,valeur_par_defaut)
     # v=Recuit_simulé.recuit_simule(v,valeur_par_defaut)
-    display(v)
+    #display(v)
     # print("conflits apres",compteur_de_conflit(v))
     #Heuristique.heuristique(v,valeur_par_defaut)
     #Heuristique2.apply_heuristique(parse_grid(grid1))
     #print(comptage)
-    Heuristique3.hidden_singles(parse_grid(grid3))
+    Heuristique3.heuristique3(parse_grid(grid2))
 
     #solve(parse_grid(grid2))
 
