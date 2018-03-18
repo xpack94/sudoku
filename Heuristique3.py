@@ -1,5 +1,5 @@
 import Game,Remplissage_carrés
-
+import sys
 
 def default_values(values):
     valeur_par_defaut = {k: values[k] for i in range(18, len(Game.unitlist)) for k in Game.unitlist[i] if
@@ -39,7 +39,6 @@ def delete_from_row_or_column(values,liste,digit,start,end):
 
 
 
-
 #verifie si les elements se trouvent dans la meme ligne ou la meme colonne
 def check(values,liste,digit):
     alph=["A","B","C","D","E","F","G","H","I"]
@@ -52,7 +51,7 @@ def check(values,liste,digit):
             letter=alph.index(l[0][0][0])
             letter+=1
             letter2=alph[letter]
-            if l[1][0][0] == letter2:
+            if l[1][0][0] == letter2 and l[0][0][1]==l[1][0][1]:
                 col = [x[0] for x in l]
                 values = delete_from_row_or_column(values, col, digit, 0, 9)
 
@@ -66,7 +65,7 @@ def check(values,liste,digit):
             letter2 = alph[letter]
             if len(alph)>letter+1:
                 letter3 = alph[letter + 1]
-                if l[1][0][0] == letter2 and l[2][0][0] == letter3:
+                if l[1][0][0] == letter2 and l[2][0][0] == letter3 and (l[0][0][1]==l[1][0][1]==l[2][0][1]):
                     col = [x[0] for x in l]
                     values = delete_from_row_or_column(values, col, digit, 0, 9)
 
@@ -122,7 +121,6 @@ def hidden_singles(values,valeur_par_defaut):
                         #element unique dans une case
                         #eliminer toutes ces apparition dans les autres case qui lui sont paires
                         values=Game.assign(values,Game.unitlist[square][s],values[Game.unitlist[square][s]])
-                        print("found .................................................")
                     if counter!=0:
                         numbers_found.append(digit)
                     counter=0
@@ -133,11 +131,18 @@ def hidden_singles(values,valeur_par_defaut):
 
 
 
+
+
 def heuristique3(values):
     valeur_par_defaut= default_values(values)
     values=hidden_singles(values,valeur_par_defaut)
     values=locked_candidates(values,valeur_par_defaut)
-    Game.display(values)
-    print((Game.compteur_de_conflit(values)))
-    # values=Game.assign(values,"A8",str(5))
-    # Game.display(values)
+    if all(len(values[s]) == 1 for s in Game.squares):
+        return values
+    else:
+        values= Game.search(values)
+        return values
+
+    return values
+
+

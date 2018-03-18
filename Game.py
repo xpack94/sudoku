@@ -1,3 +1,4 @@
+
 import HillClimbing
 import Recuit_simulé
 import sys
@@ -146,6 +147,7 @@ def eliminate(values, s, d):
 
 def display(values):
     "Display these values as a 2-D grid."
+    print(values)
     width = 1 + max(len(values[s]) for s in squares)
     line = '+'.join(['-' * (width * 3)] * 3)
     for r in rows:
@@ -163,6 +165,7 @@ def solve(grid): return search(parse_grid(grid))
 
 
 def search(values):
+    result=False
     "Using depth-first search and propagation, try all possible values."
     if values is False:
         return False  ## Failed earlier
@@ -171,17 +174,7 @@ def search(values):
     ## Chose the unfilled square s with the fewest possibilities
     n, s = min((len(values[s]), s) for s in squares if len(values[s]) > 1)
 
-    # for d in values[s]:
-    #     #incrementer le compteur a chaque tour de boucle
-    #     #car a chaque tour on assign un chiffre a une case
-    #     compteur=comptage_tentative(compteur)
-    #     result,compteur=search(assign(values.copy(), s, d),compteur)
-    #     if result:
-    #         #le jeux a été resolu
-    #         break
 
-
-    #return result,compteur
     return some(search(assign(values.copy(), s, d))
                 for d in values[s] )
 
@@ -245,25 +238,97 @@ def solve_all(grids, name='', showif=0.0):
     """Attempt to solve a sequence of grids. Report results.
     When showif is a number of seconds, display puzzles that take longer.
     When showif is None, don't display any puzzles."""
+    results_by_algorithm=[]
 
     def time_solve(grid):
+        values, valeur_par_defaut = Remplissage_carrés.remplissage(parse_grid(grid))
+        comptage=0
         start = time.clock()
-        values = solve(grid)
+        brute_force = solve(grid)
         t = time.clock() - start
+        results_by_algorithm.append(("brute_force",t,compteur_de_conflit(brute_force),comptage))
+        comptage=0
+        start = time.clock()
+        hill = HillClimbing.hill_climbing(values,valeur_par_defaut)
+        t = time.clock() - start
+        results_by_algorithm.append(("hill_climbing", t, compteur_de_conflit(hill),comptage))
+        comptage = 0
+        start = time.clock()
+        h1 = Heuristique1.heuristique(values, valeur_par_defaut)
+        t = time.clock() - start
+        results_by_algorithm.append(("heuristique1", t, compteur_de_conflit(hill), comptage))
+        comptage=0
+        start = time.clock()
+        recuit = Recuit_simulé.recuit_simule(values, valeur_par_defaut)
+        t = time.clock() - start
+        results_by_algorithm.append(("recuit_simule", t, compteur_de_conflit(recuit),comptage))
+        comptage=0
+        start = time.clock()
+        h3 = Heuristique3.heuristique3(parse_grid(grid))
+        t = time.clock() - start
+        results_by_algorithm.append(("heuristique3", t, compteur_de_conflit(h3),comptage))
+
         ## Display puzzles that take long enough
         if showif is not None and t > showif:
             display(grid_values(grid))
             if values: display(values)
             print
             '(%.2f seconds)\n' % t
-        return (t, solved(values))
+        return (t, solved(values),results_by_algorithm)
 
-    times, results = zip(*[time_solve(grid) for grid in grids])
+    times, results,algo = zip(*[time_solve(grid) for grid in grids])
+    print(algo)
     N = len(grids)
     if N > 1:
         print(
         "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
             sum(results), N, name, sum(times) / N, N / sum(times), max(times)))
+
+        brute_force_t=0
+        hill_climbing_t=0
+        h1_t,h3_t,recuit_t=0,0,0
+        brute_force_c,hill_c,h1_c,h3_c,recuit_c=0,0,0,0,0
+        brute_count,hill_count,h1_count,recuit_count,h3_count=0,0,0,0,0
+        #faire les statistiques
+
+        for c in results_by_algorithm:
+                if c[0]=="brute_force":
+                 brute_force_t+=c[1]
+                 brute_force_c+=c[2]
+                 brute_count+=1
+                elif c[0]=="hill_climbing":
+                    hill_climbing_t+=c[1]
+                    if c[2]==0:
+                        hill_c+=c[2]
+                        hill_count+=1
+                elif c[0]=="heuristique1":
+                    h1_t+=c[1]
+                    if c[2]==0:
+                        h1_c+=c[2]
+                        h1_count+=1
+                elif c[0]=="recuit_simule":
+                    recuit_t+=c[1]
+                    if c[2]==0:
+                        recuit_c+=c[2]
+                        recuit_count+=1
+                else:
+                    h3_t+=c[1]
+                    if c[2]==0:
+                        h3_c+=c[2]
+                        h3_count += 1
+
+        print("brute force solved", brute_count, "of", N, "avreage time", brute_force_t / N)
+        print("hill climbing solved", hill_count , "of", N, "avreage time", hill_climbing_t / N,
+                      "avreage conflits", hill_c / N)
+        print("heuristique1 solved", h1_count , "of", N, "avreage time", h1_t / N, "avreage conflits",
+                      h1_c / N)
+        print("recuit simule solved", recuit_count, "of", N, "avreage time", recuit_t / N,
+                      "avreage conflits", recuit_c / N)
+        print("heuristique3 solved", h3_count, "of", N, "avreage time", h3_t / N, "avreage conflits",
+                      h3_c / N)
+
+
+                #print(c[0], "temp", c[1], "conflit", c[2], "comptage", c[3])
 
 
 def solved(values):
@@ -292,6 +357,11 @@ grid1 = '00302060090030500100180640000810290070000000800670820000260950080020300
 grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
 hard1 = '.....6....59.....82....8....45........3........6..3.54...325..6..................'
 
+
+def from_file(filename, sep='\n'):
+    "Parse a file into a list of strings, separated by sep."
+    return open(filename).read().strip().split(sep)
+
 if __name__ == '__main__':
     test()
     # solve_all(from_file("easy50.txt", '========'), "easy", None)
@@ -303,9 +373,10 @@ if __name__ == '__main__':
     grid3= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
     grid4='406010000020000100500207000600001800000030509080000300030060210000000050000350408'
     grid5='039010000000073080708000105005000008001900000360000000024000009000080320000001800'
-    print("avant la resolution")
-    display(parse_grid(grid4))
-
+    grid6="039010000000073080708000105005000008001900000360000000024000009000080320000001800"
+    #print("avant la resolution")
+    #display(parse_grid(grid1))
+    solve_all(from_file("100config.txt"),"easy",None)
     #display(solve(grid2))
 
     #values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid1))
@@ -318,9 +389,9 @@ if __name__ == '__main__':
     #Heuristique.heuristique(v,valeur_par_defaut)
     #Heuristique2.apply_heuristique(parse_grid(grid1))
     #print(comptage)
-    Heuristique3.heuristique3(parse_grid(grid4))
 
-    #solve(parse_grid(grid2))
+    #Heuristique3.heuristique3(parse_grid("039010000000073080708000105005000008001900000360000000024000009000080320000001800"))
+    #display(solve(grid6))
 
     ## References used:
     ## http://www.scanraid.com/BasicStrategies.htm

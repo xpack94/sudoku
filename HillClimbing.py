@@ -42,15 +42,12 @@ def combinison_possible(values,default_values,conflit_actuel):
     return values
 
 
+
+
+
 def hill_climbing(values,valeur_par_defaut):
 
-
-    #values,valeur_par_defaut=Remplissage_carrés.remplissage(values)
-    Game.display(values)
     conflit = Game.compteur_de_conflit(values)
-    print("nombre de conflit avant ",conflit)
     values=combinison_possible(values,valeur_par_defaut,conflit)
-    Game.display(values)
-    print("nombre de conflit apres avec hillclimbing",Game.compteur_de_conflit(values))
     return values
 

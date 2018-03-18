@@ -54,19 +54,17 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
             values=Game.swap(values,enfant_potentiel[0],enfant_potentiel[1])
             #tester si le swap reduit les conflits
             conflits=Game.compteur_de_conflit(values)
-            #print("swaped ", enfant_potentiel ,"conflit ",conflits ,"conf actuel ", conflit_actuel)
             diff_conflit= float(conflit_actuel-conflits)
 
             if  diff_conflit>0 or probability(math.exp(diff_conflit/temp)):
-                print(conflit_actuel,temp)
                 conflit_actuel=conflits
-                temp = cooling(temp)
+
 
 
             else:
                 values = Game.swap(values, enfant_potentiel[0], enfant_potentiel[1])
 
-
+            temp = cooling(temp)
 
 
         #values = trouver_candidat(temp, values, default_values, conflit_actuel)
@@ -82,12 +80,10 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
 
 def recuit_simule(values,valeur_par_defaut):
     Temperature = 3 #par defaut
-    #values,valeur_par_defaut =Remplissage_carrés.remplissage(values)
-    #Game.display(values)
+
     conflit=Game.compteur_de_conflit(values)
-    #print("nombre de conflit avant ", conflit)
+
     values= trouver_candidat(Temperature,values,valeur_par_defaut,conflit)
-    #print("nombre de conflit apres ", Game.compteur_de_conflit(values))
-    #Game.display(values)
+
     return values
 
