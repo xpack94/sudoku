@@ -301,8 +301,10 @@ if __name__ == '__main__':
     grid1 = '200060000007004086000001300000000040090000000480000710900078000000050002020600501'
     grid2 = '4.....8.5.3..........7......2.....6.....8.4......1.......6.3.7.5..2.....1.4......'
     grid3= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
+    grid4='406010000020000100500207000600001800000030509080000300030060210000000050000350408'
+    grid5='039010000000073080708000105005000008001900000360000000024000009000080320000001800'
     print("avant la resolution")
-    display(parse_grid(grid2))
+    display(parse_grid(grid4))
 
     #display(solve(grid2))
 
@@ -316,7 +318,7 @@ if __name__ == '__main__':
     #Heuristique.heuristique(v,valeur_par_defaut)
     #Heuristique2.apply_heuristique(parse_grid(grid1))
     #print(comptage)
-    Heuristique3.heuristique3(parse_grid(grid2))
+    Heuristique3.heuristique3(parse_grid(grid4))
 
     #solve(parse_grid(grid2))
 

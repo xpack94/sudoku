@@ -9,7 +9,6 @@ def default_values(values):
 #supprime digit de spot qui se trouve dans values
 def erase(values,spot,digit):
     if len(values[spot])==2:
-        print(spot, values[spot], "........................................")
         val = values[spot]
         val=val.replace(str(digit),'')
         values = Game.assign(values, spot,val)
@@ -32,33 +31,44 @@ def delete_from_row_or_column(values,liste,digit,start,end):
                         erased=True #on a supprimmer une valeur d'une autre case
 
     if erased:
-
         valeur_par_defaut = default_values(values)
-        print("called again")
         values = hidden_singles(values, valeur_par_defaut)
         values = locked_candidates(values, valeur_par_defaut)
 
     return values
 
 
-    return
+
+
 #verifie si les elements se trouvent dans la meme ligne ou la meme colonne
 def check(values,liste,digit):
-    print(digit,liste)
+    alph=["A","B","C","D","E","F","G","H","I"]
     l=sorted(liste,key=lambda x:int(x[1]))
-    offset=0
-    for i in range(0,len(l)-1):
-      offset+=int(l[i+1][1]) - int(l[i][1])
-    if (offset==6 and len(liste)==3)or (offset==3 and len(liste)==2):
-        #les elements se trouvent sur la meme colonne
-        col = [x[0] for x in l]
-        values = delete_from_row_or_column(values, col, digit, 0, 9)
-    elif (offset == 2 and len(liste)==3) or (offset==1 and len(liste)==2):
-        #les elements se trouve,t sur la meme ligne
-        lgn = [x[0] for x in l]
-        values=delete_from_row_or_column(values,lgn,digit,9,18)
-    else:
-        return values
+    if len(liste)==2:
+        if l[0][0][0] == l[1][0][0]:
+            lgn = [x[0] for x in l]
+            values = delete_from_row_or_column(values, lgn, digit, 9, 18)
+        else :
+            letter=alph.index(l[0][0][0])
+            letter+=1
+            letter2=alph[letter]
+            if l[1][0][0] == letter2:
+                col = [x[0] for x in l]
+                values = delete_from_row_or_column(values, col, digit, 0, 9)
+
+    if len(liste)==3:
+        if l[0][0][0] == l[1][0][0] and l[0][0][0] == l[2][0][0]:
+            lgn = [x[0] for x in l]
+            values = delete_from_row_or_column(values, lgn, digit, 9, 18)
+        else:
+            letter = alph.index(l[0][0][0])
+            letter += 1
+            letter2 = alph[letter]
+            if len(alph)>letter+1:
+                letter3 = alph[letter + 1]
+                if l[1][0][0] == letter2 and l[2][0][0] == letter3:
+                    col = [x[0] for x in l]
+                    values = delete_from_row_or_column(values, col, digit, 0, 9)
 
     return values
 
@@ -111,9 +121,8 @@ def hidden_singles(values,valeur_par_defaut):
                     if counter==0:
                         #element unique dans une case
                         #eliminer toutes ces apparition dans les autres case qui lui sont paires
-
                         values=Game.assign(values,Game.unitlist[square][s],values[Game.unitlist[square][s]])
-
+                        print("found .................................................")
                     if counter!=0:
                         numbers_found.append(digit)
                     counter=0
