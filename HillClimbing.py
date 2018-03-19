@@ -37,7 +37,7 @@ def combinison_possible(values,default_values,conflit_actuel):
     #maintetant qu'on a la liste de tout les candidats possible
     #on choisit celui qui diminu les conflit le plus
     meilleur= min(list_de_candidats , key=lambda x:x[1])
-    values=Game.swap(values,meilleur[0][0],meilleur[0][1])
+    values=Game.swap(values,meilleur[0][0],meilleur[0][1],increment="inc")
     values= combinison_possible(values,default_values,meilleur[1])
     return values
 
@@ -49,5 +49,6 @@ def hill_climbing(values,valeur_par_defaut):
 
     conflit = Game.compteur_de_conflit(values)
     values=combinison_possible(values,valeur_par_defaut,conflit)
-    return values
+    # on retourne le nouveau hashmap ainsi que le nombre de noeuds exploré
+    return values,Game.noeud_explores
 

@@ -51,7 +51,7 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
             rand = random.randint(0, len(comb) - 1)
             #random_enfant = randint(0,len(comb[rand])-1)
             enfant_potentiel =comb[rand]
-            values=Game.swap(values,enfant_potentiel[0],enfant_potentiel[1])
+            values=Game.swap(values,enfant_potentiel[0],enfant_potentiel[1],"inc")
             #tester si le swap reduit les conflits
             conflits=Game.compteur_de_conflit(values)
             diff_conflit= float(conflit_actuel-conflits)
@@ -62,7 +62,7 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
 
 
             else:
-                values = Game.swap(values, enfant_potentiel[0], enfant_potentiel[1])
+                values = Game.swap(values, enfant_potentiel[0], enfant_potentiel[1],"dec")
 
             temp = cooling(temp)
 
@@ -84,6 +84,6 @@ def recuit_simule(values,valeur_par_defaut):
     conflit=Game.compteur_de_conflit(values)
 
     values= trouver_candidat(Temperature,values,valeur_par_defaut,conflit)
-
-    return values
+    # on retourne le nouveau hashmap ainsi que le nombre de noeuds exploré
+    return values,Game.noeud_explores
 

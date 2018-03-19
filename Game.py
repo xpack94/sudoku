@@ -5,7 +5,7 @@ import sys
 import Remplissage_carrés
 import Heuristique2
 import Heuristique1
-import Heuristique3
+import Heuristique2
 ## Solve Every Sudoku Puzzle
 
 ## See http://norvig.com/sudoku.html
@@ -39,8 +39,8 @@ peers = dict((s, set(sum(units[s], [])) - set([s]))
              for s in squares)
 
 comptage = 0
-
-
+noeud_explores=0
+ss=0
 ################ Unit Tests ################
 
 def test():
@@ -221,13 +221,29 @@ def score(values):
     return sum([-1 for u in range(0,18)  for l in unitlist[u] if len(values[l]) ==1])
 
 #fonction qui swap deux valeurs dans deux case du meme carré
-def swap(values,first,second):
+#si l'argument increment est a inc alors on increment le nombre de noeuds total visité
+#si il est a dec alors on decremente
+def swap(values,first,second,increment=False):
+    if increment == "inc":
+        increment_nodes()
+    elif increment=="dec":
+        decrement_nodes()
     temp = values[first]
     values[first] = values[second]
     values[second] = temp
     return values
 
+def decrement_nodes():
+    global noeud_explores
+    noeud_explores=noeud_explores-1
 
+def increment_nodes():
+    global noeud_explores
+    noeud_explores=noeud_explores+1
+
+def renitialize():
+    global comptage
+    comptage=0
 
 ################ System test ################
 
@@ -242,53 +258,54 @@ def solve_all(grids, name='', showif=0.0):
 
     def time_solve(grid):
         values, valeur_par_defaut = Remplissage_carrés.remplissage(parse_grid(grid))
-        comptage=0
+        global comptage,noeud_explores
+        start_algorithms=time.clock()
         start = time.clock()
         brute_force = solve(grid)
         t = time.clock() - start
         results_by_algorithm.append(("brute_force",t,compteur_de_conflit(brute_force),comptage))
-        comptage=0
         start = time.clock()
-        hill = HillClimbing.hill_climbing(values,valeur_par_defaut)
+        hill,nodes = HillClimbing.hill_climbing(values,valeur_par_defaut)
         t = time.clock() - start
-        results_by_algorithm.append(("hill_climbing", t, compteur_de_conflit(hill),comptage))
-        comptage = 0
+        results_by_algorithm.append(("hill_climbing", t, compteur_de_conflit(hill),nodes))
+        noeud_explores=0
         start = time.clock()
-        h1 = Heuristique1.heuristique(values, valeur_par_defaut)
+        h1,nodes = Heuristique1.heuristique(values, valeur_par_defaut)
         t = time.clock() - start
-        results_by_algorithm.append(("heuristique1", t, compteur_de_conflit(hill), comptage))
-        comptage=0
+        results_by_algorithm.append(("heuristique1", t, compteur_de_conflit(hill), nodes))
+        noeud_explores=0
         start = time.clock()
-        recuit = Recuit_simulé.recuit_simule(values, valeur_par_defaut)
+        recuit,nodes = Recuit_simulé.recuit_simule(values, valeur_par_defaut)
         t = time.clock() - start
-        results_by_algorithm.append(("recuit_simule", t, compteur_de_conflit(recuit),comptage))
-        comptage=0
+        results_by_algorithm.append(("recuit_simule", t, compteur_de_conflit(recuit),nodes))
+        renitialize()
         start = time.clock()
-        h3 = Heuristique3.heuristique3(parse_grid(grid))
+        h3 = Heuristique2.heuristique2(parse_grid(grid))
         t = time.clock() - start
-        results_by_algorithm.append(("heuristique3", t, compteur_de_conflit(h3),comptage))
-
+        results_by_algorithm.append(("heuristique2", t, compteur_de_conflit(h3),comptage))
+        global_time=time.clock()-start_algorithms
         ## Display puzzles that take long enough
         if showif is not None and t > showif:
             display(grid_values(grid))
             if values: display(values)
             print
             '(%.2f seconds)\n' % t
-        return (t, solved(values),results_by_algorithm)
+        return (t, solved(values),results_by_algorithm,global_time)
 
-    times, results,algo = zip(*[time_solve(grid) for grid in grids])
+    times, results,algo ,global_time= zip(*[time_solve(grid) for grid in grids])
     print(algo)
     N = len(grids)
     if N > 1:
-        print(
-        "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
-            sum(results), N, name, sum(times) / N, N / sum(times), max(times)))
+        # print(
+        # "Solved %d of %d %s puzzles (avg %.2f secs (%d Hz), max %.2f secs)." % (
+        #     sum(results), N, name, sum(times) / N, N / sum(times), max(times)))
 
         brute_force_t=0
         hill_climbing_t=0
         h1_t,h3_t,recuit_t=0,0,0
         brute_force_c,hill_c,h1_c,h3_c,recuit_c=0,0,0,0,0
         brute_count,hill_count,h1_count,recuit_count,h3_count=0,0,0,0,0
+        brute_force_comp,hill_comp,h1_comp,h3_comp,recuit_comp=0,0,0,0,0
         #faire les statistiques
 
         for c in results_by_algorithm:
@@ -296,37 +313,44 @@ def solve_all(grids, name='', showif=0.0):
                  brute_force_t+=c[1]
                  brute_force_c+=c[2]
                  brute_count+=1
+                 brute_force_comp+=c[3]
                 elif c[0]=="hill_climbing":
                     hill_climbing_t+=c[1]
                     if c[2]==0:
-                        hill_c+=c[2]
                         hill_count+=1
+                    hill_c+=c[2]
+                    hill_comp+=c[3]
                 elif c[0]=="heuristique1":
                     h1_t+=c[1]
                     if c[2]==0:
-                        h1_c+=c[2]
                         h1_count+=1
+                    h1_c+=c[2]
+                    h1_comp+=c[3]
                 elif c[0]=="recuit_simule":
                     recuit_t+=c[1]
                     if c[2]==0:
-                        recuit_c+=c[2]
                         recuit_count+=1
+                    recuit_c+=c[2]
+                    recuit_comp+=c[3]
                 else:
                     h3_t+=c[1]
                     if c[2]==0:
-                        h3_c+=c[2]
                         h3_count += 1
+                    h3_c+=c[2]
+                    h3_comp+=c[3]
 
-        print("brute force solved", brute_count, "of", N, "avreage time", brute_force_t / N)
-        print("hill climbing solved", hill_count , "of", N, "avreage time", hill_climbing_t / N,
-                      "avreage conflits", hill_c / N)
-        print("heuristique1 solved", h1_count , "of", N, "avreage time", h1_t / N, "avreage conflits",
-                      h1_c / N)
-        print("recuit simule solved", recuit_count, "of", N, "avreage time", recuit_t / N,
-                      "avreage conflits", recuit_c / N)
-        print("heuristique3 solved", h3_count, "of", N, "avreage time", h3_t / N, "avreage conflits",
-                      h3_c / N)
+        print("brute force solved", brute_count, "of", N, "avreage time", brute_force_t / N,"secs","avreage conflicts",brute_force_c,
+              "avreage explored nodes",brute_force_comp/N)
+        print("hill climbing solved", hill_count , "of", N, "avreage time", hill_climbing_t / N,"secs",
+                      "avreage conflitcs", hill_c / N,"avreage explored nodes",hill_comp/N)
+        print("heuristique1 solved", h1_count , "of", N, "avreage time", h1_t / N,"secs", "avreage conflitcs",
+                      h1_c / N,"avreage explored nodes",h1_comp/N)
+        print("recuit simule solved", recuit_count, "of", N, "avreage time", recuit_t / N,"secs",
+                      "avreage conflits", recuit_c / N,"avreage explored Nodes",recuit_comp/N)
+        print("heuristique2 solved", h3_count, "of", N, "avreage time", h3_t / N, "secs","avreage conflitcs",
+                      h3_c / N,"avreage explored nodes",h3_comp/N)
 
+        print("global time taken  ",sum(global_time),"secs","avreage time taken",sum(global_time)/N,"secs")
 
                 #print(c[0], "temp", c[1], "conflit", c[2], "comptage", c[3])
 
@@ -377,12 +401,13 @@ if __name__ == '__main__':
     #print("avant la resolution")
     #display(parse_grid(grid1))
     solve_all(from_file("100config.txt"),"easy",None)
-    #display(solve(grid2))
-
-    #values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid1))
+    #values,valeur_par_defaut=Remplissage_carrés.remplissage(parse_grid(grid3))
     #v=values.copy()
     #print(compteur_de_nombre(v))
-    #v1=HillClimbing.hill_climbing(values,valeur_par_defaut)
+    # renitialize()
+    # v1=HillClimbing.hill_climbing(values,valeur_par_defaut)
+    # display(v1)
+    # print(comptage)
     # v=Recuit_simulé.recuit_simule(v,valeur_par_defaut)
     #display(v)
     # print("conflits apres",compteur_de_conflit(v))
