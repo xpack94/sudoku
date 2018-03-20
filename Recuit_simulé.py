@@ -81,6 +81,7 @@ def trouver_candidat(temp,values, default_values,conflit_actuel):
 def recuit_simule(values,valeur_par_defaut):
     Temperature = 3 #par defaut
 
+    Game.noeud_explores=0
     conflit=Game.compteur_de_conflit(values)
 
     values= trouver_candidat(Temperature,values,valeur_par_defaut,conflit)

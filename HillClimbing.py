@@ -47,6 +47,7 @@ def combinison_possible(values,default_values,conflit_actuel):
 
 def hill_climbing(values,valeur_par_defaut):
 
+    Game.noeud_explores=0 #renitializer le nombre de noeuds exploré a 0
     conflit = Game.compteur_de_conflit(values)
     values=combinison_possible(values,valeur_par_defaut,conflit)
     # on retourne le nouveau hashmap ainsi que le nombre de noeuds exploré

@@ -37,10 +37,8 @@ units = dict((s, [u for u in unitlist if s in u])
              for s in squares)
 peers = dict((s, set(sum(units[s], [])) - set([s]))
              for s in squares)
-
 comptage = 0
 noeud_explores=0
-ss=0
 ################ Unit Tests ################
 
 def test():
@@ -224,6 +222,7 @@ def score(values):
 #si l'argument increment est a inc alors on increment le nombre de noeuds total visité
 #si il est a dec alors on decremente
 def swap(values,first,second,increment=False):
+
     if increment == "inc":
         increment_nodes()
     elif increment=="dec":
@@ -236,14 +235,21 @@ def swap(values,first,second,increment=False):
 def decrement_nodes():
     global noeud_explores
     noeud_explores=noeud_explores-1
+    return noeud_explores
 
 def increment_nodes():
     global noeud_explores
     noeud_explores=noeud_explores+1
+    return noeud_explores
 
 def renitialize():
     global comptage
     comptage=0
+
+def renitialize_nodes():
+    global noeud_explores
+    noeud_explores=0
+    return noeud_explores
 
 ################ System test ################
 
@@ -258,6 +264,10 @@ def solve_all(grids, name='', showif=0.0):
 
     def time_solve(grid):
         values, valeur_par_defaut = Remplissage_carrés.remplissage(parse_grid(grid))
+        #faire des copy et utiliser chaque copie dans un algorithme
+        v1 = values.copy()
+        v2 = values.copy()
+        v3 = values.copy()
         global comptage,noeud_explores
         start_algorithms=time.clock()
         start = time.clock()
@@ -265,19 +275,20 @@ def solve_all(grids, name='', showif=0.0):
         t = time.clock() - start
         results_by_algorithm.append(("brute_force",t,compteur_de_conflit(brute_force),comptage))
         start = time.clock()
-        hill,nodes = HillClimbing.hill_climbing(values,valeur_par_defaut)
+        hill,nodes = HillClimbing.hill_climbing(v1,valeur_par_defaut)
         t = time.clock() - start
         results_by_algorithm.append(("hill_climbing", t, compteur_de_conflit(hill),nodes))
-        noeud_explores=0
+        #v=values.copy()
         start = time.clock()
-        h1,nodes = Heuristique1.heuristique(values, valeur_par_defaut)
+        h1,nodes_explored = Heuristique1.heuristique(v2, valeur_par_defaut)
         t = time.clock() - start
-        results_by_algorithm.append(("heuristique1", t, compteur_de_conflit(hill), nodes))
-        noeud_explores=0
+        results_by_algorithm.append(("heuristique1", t, compteur_de_conflit(hill), nodes_explored))
+        #v = values.copy()
         start = time.clock()
-        recuit,nodes = Recuit_simulé.recuit_simule(values, valeur_par_defaut)
+        recuit,nodes = Recuit_simulé.recuit_simule(v3, valeur_par_defaut)
         t = time.clock() - start
         results_by_algorithm.append(("recuit_simule", t, compteur_de_conflit(recuit),nodes))
+        #v = values.copy()
         renitialize()
         start = time.clock()
         h3 = Heuristique2.heuristique2(parse_grid(grid))
@@ -292,8 +303,9 @@ def solve_all(grids, name='', showif=0.0):
             '(%.2f seconds)\n' % t
         return (t, solved(values),results_by_algorithm,global_time)
 
+
+
     times, results,algo ,global_time= zip(*[time_solve(grid) for grid in grids])
-    print(algo)
     N = len(grids)
     if N > 1:
         # print(
@@ -352,7 +364,7 @@ def solve_all(grids, name='', showif=0.0):
 
         print("global time taken  ",sum(global_time),"secs","avreage time taken",sum(global_time)/N,"secs")
 
-                #print(c[0], "temp", c[1], "conflit", c[2], "comptage", c[3])
+
 
 
 def solved(values):
@@ -397,7 +409,7 @@ if __name__ == '__main__':
     grid3= '.....6....59.....82....8....45........3........6..3.54...325..6..................'
     grid4='406010000020000100500207000600001800000030509080000300030060210000000050000350408'
     grid5='039010000000073080708000105005000008001900000360000000024000009000080320000001800'
-    grid6="039010000000073080708000105005000008001900000360000000024000009000080320000001800"
+    grid6="900250000030649000000003020000000800500070410691020000008100000040000070075000080"
     #print("avant la resolution")
     #display(parse_grid(grid1))
     solve_all(from_file("100config.txt"),"easy",None)
@@ -405,8 +417,13 @@ if __name__ == '__main__':
     #v=values.copy()
     #print(compteur_de_nombre(v))
     # renitialize()
-    # v1=HillClimbing.hill_climbing(values,valeur_par_defaut)
+    # v1,nodeuds=HillClimbing.hill_climbing(values,valeur_par_defaut)
+    # print(nodeuds)
+    # v2,nodeuds=Heuristique1.heuristique(values,valeur_par_defaut)
     # display(v1)
+    #print(nodeuds)
+    #v2, nodeuds = HillClimbing.hill_climbing(v, valeur_par_defaut)
+    #print(nodeuds)
     # print(comptage)
     # v=Recuit_simulé.recuit_simule(v,valeur_par_defaut)
     #display(v)
